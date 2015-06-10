@@ -1,0 +1,19 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+    <f:section title="${%Latch}">
+        <f:entry field="enabled" >
+          <f:checkbox default="false" title="${%Enable Latch}" checked="${descriptor.isEnabled()}"/>
+        </f:entry>
+        <f:entry title="${%appID}" field="appId"
+                 description="${%applicationId}">
+            <f:textbox value="${descriptor.getAppId()}" />
+        </f:entry>
+        <f:entry title="${%secret}" field="secret"
+                 description="${%applicationSecret}">
+            <f:textbox  value="${descriptor.getSecret()}" />
+        </f:entry>
+        <f:validateButton
+                title="${%Test Connection}" progress="${%Testing...}"
+                method="latchAppTestConnection" with="appId,secret" />
+    </f:section>
+</j:jelly>

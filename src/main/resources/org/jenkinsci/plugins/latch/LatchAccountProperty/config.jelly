@@ -1,0 +1,16 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+    <j:if test="${instance.accountId == null}">
+
+        <f:entry title="Pair Token" field="pairToken"
+                 description="${%Pair Description}">
+            <f:textbox />
+        </f:entry>
+        <f:validateButton
+                title="${%Pair Connection}" progress="${%Paring...}"
+                method="latchPairConnection" with="pairToken" />
+    </j:if>
+    <j:if test="${instance.accountId != null}">
+        <f:validateButton title="${%Unpair Connection}" progress="${%Unparing...}" method="latchUnpairConnection"/>
+    </j:if>
+</j:jelly>

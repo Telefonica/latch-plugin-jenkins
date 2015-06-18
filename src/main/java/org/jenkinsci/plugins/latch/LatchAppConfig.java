@@ -22,6 +22,7 @@ import com.elevenpaths.latch.LatchApp;
 import com.elevenpaths.latch.LatchResponse;
 import hudson.Extension;
 import hudson.Plugin;
+import hudson.model.Messages;
 import hudson.util.FormValidation;
 import jenkins.model.GlobalConfiguration;
 import jenkins.model.GlobalConfigurationCategory;
@@ -120,13 +121,14 @@ public class LatchAppConfig extends Plugin {
                                                        @QueryParameter("secret") final String secret) throws IOException, ServletException {
 
             LatchApp latchApp = new LatchApp(appId, secret);
-            latchApp.setHost("http://path2.test.11paths.com");
             LatchResponse pairResponse = latchApp.pair("");
 
-            if (appId.length() < 20 || appId.length() > 20) {
+            if (appId.length() != 20) {
                 return FormValidation.error(Messages.LatchAppConfig_Invalid_AppId());
-            } else if (secret.length() < 40 || secret.length() > 40) {
+            } else if (secret.length() != 40) {
                 return FormValidation.error(Messages.LatchAppConfig_Invalid_Secret());
+            } else if (pairResponse == null) {
+                return FormValidation.error(Messages.LatchAccountProperty_UnreachableConnection());
             } else if (pairResponse.getError().getCode() != 401) {
                 return FormValidation.error(pairResponse.getError().toString());
             }

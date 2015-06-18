@@ -23,8 +23,12 @@ import com.google.gson.JsonObject;
 import jenkins.model.Jenkins;
 
 import java.util.concurrent.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class AsyncLatchHandler implements Callable<Boolean> {
+
+    private static final Logger LOGGER = Logger.getLogger(AsyncLatchHandler.class.getName());
 
     private final static int LATCH_SECONDS_TIMEOUT = 3;
 
@@ -40,7 +44,7 @@ public class AsyncLatchHandler implements Callable<Boolean> {
     public Boolean call() throws Exception {
         LatchResponse response = this.api.status(accountId);
 
-        if (response.getData() != null && response.getData().has("operations")) {
+        if (response != null && response.getData() != null && response.getData().has("operations")) {
 
             String appId = Jenkins.getInstance().getPlugin(LatchAppConfig.class).getAppId();
             JsonObject json = response.getData().getAsJsonObject("operations").getAsJsonObject(appId);
@@ -62,13 +66,20 @@ public class AsyncLatchHandler implements Callable<Boolean> {
         boolean result = true;
 
         try {
+
             if (api != null && accountId != null && !accountId.isEmpty()) {
                 ExecutorService executor = Executors.newSingleThreadExecutor();
                 Future<Boolean> future = executor.submit(new AsyncLatchHandler(api, accountId));
                 result = future.get(LATCH_SECONDS_TIMEOUT, TimeUnit.SECONDS);
                 executor.shutdownNow();
             }
-        } catch (Exception e) {}
+        } catch (InterruptedException e) {
+            LOGGER.log(Level.SEVERE, "InterruptedException", e);
+        } catch (ExecutionException e) {
+            LOGGER.log(Level.SEVERE, "ExecutionException", e);
+        } catch (TimeoutException e) {
+            LOGGER.log(Level.SEVERE, "TimeoutException", e);
+        }
         return result;
     }
 }

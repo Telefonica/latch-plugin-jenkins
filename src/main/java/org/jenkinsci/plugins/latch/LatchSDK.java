@@ -22,10 +22,6 @@ import com.elevenpaths.latch.LatchApp;
 
 public class LatchSDK extends LatchApp {
 
-    static {
-        setHost("http://path2.test.11paths.com");
-    }
-
     private static LatchSDK instance = null;
 
     public static LatchSDK getInstance() {

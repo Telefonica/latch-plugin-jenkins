@@ -80,27 +80,39 @@ public class LatchAccountProperty extends UserProperty {
         public FormValidation doLatchPairConnection(@QueryParameter("pairToken") final String pairToken,
                                                     @AncestorInPath User user) throws IOException {
             LatchApp latchApp = LatchSDK.getInstance();
-            LatchResponse pairResponse = latchApp.pair(pairToken);
-            if (pairResponse.getError() != null && pairResponse.getError().getCode() != 205) {
-                return FormValidation.error(pairResponse.getError().getMessage());
-            } else {
-                accountId = pairResponse.getData().get("accountId").getAsString();
-                LatchAccountProperty lap = newInstance(user);
-                user.addProperty(lap);
-                return FormValidation.ok(Messages.LatchAccountProperty_Pair());
+            if (latchApp != null) {
+                LatchResponse pairResponse = latchApp.pair(pairToken);
+
+                if (pairResponse == null) {
+                    return FormValidation.error(Messages.LatchAccountProperty_UnreachableConnection());
+                } else if (pairResponse.getError() != null && pairResponse.getError().getCode() != 205) {
+                    return FormValidation.error(pairResponse.getError().getMessage());
+                } else {
+                    accountId = pairResponse.getData().get("accountId").getAsString();
+                    LatchAccountProperty lap = newInstance(user);
+                    user.addProperty(lap);
+                    return FormValidation.ok(Messages.LatchAccountProperty_Pair());
+                }
             }
+            return FormValidation.ok(Messages.LatchAccountProperty_PluginDisabled());
         }
 
         public FormValidation doLatchUnpairConnection(@AncestorInPath User user) throws IOException {
             LatchAccountProperty lap = user.getProperty(LatchAccountProperty.class);
             LatchApp latchApp = LatchSDK.getInstance();
-            LatchResponse unpairResponse  = latchApp.unpair(lap.getAccountId());
-            if (unpairResponse.getError() != null) {
-                return FormValidation.error(unpairResponse.getError().getMessage());
-            } else {
-                lap.accountId = null;
-                return FormValidation.ok(Messages.LatchAccountProperty_Unpair());
+            if (latchApp != null) {
+                LatchResponse unpairResponse = latchApp.unpair(lap.getAccountId());
+
+                if (unpairResponse == null) {
+                    return FormValidation.error(Messages.LatchAccountProperty_UnreachableConnection());
+                } else if (unpairResponse.getError() != null) {
+                    return FormValidation.error(unpairResponse.getError().getMessage());
+                } else {
+                    lap.accountId = null;
+                    return FormValidation.ok(Messages.LatchAccountProperty_Unpair());
+                }
             }
+            return FormValidation.ok(Messages.LatchAccountProperty_PluginDisabled());
         }
     }
 }

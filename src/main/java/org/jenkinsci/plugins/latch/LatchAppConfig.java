@@ -22,7 +22,6 @@ import com.elevenpaths.latch.LatchApp;
 import com.elevenpaths.latch.LatchResponse;
 import hudson.Extension;
 import hudson.Plugin;
-import hudson.model.Messages;
 import hudson.util.FormValidation;
 import jenkins.model.GlobalConfiguration;
 import jenkins.model.GlobalConfigurationCategory;

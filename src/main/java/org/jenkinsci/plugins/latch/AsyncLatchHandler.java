@@ -49,11 +49,7 @@ public class AsyncLatchHandler implements Callable<Boolean> {
             String appId = Jenkins.getInstance().getPlugin(LatchAppConfig.class).getAppId();
             JsonObject json = response.getData().getAsJsonObject("operations").getAsJsonObject(appId);
 
-            if (json == null) {
-                return true; //Something is wrong with latch appId or connectivity
-            }
-
-            if (json.has("status") && "off".equals(json.get("status").getAsString())) {
+            if (json != null && json.has("status") && "off".equals(json.get("status").getAsString())) {
                 return false;
             }
         }

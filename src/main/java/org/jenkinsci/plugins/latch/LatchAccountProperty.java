@@ -109,6 +109,7 @@ public class LatchAccountProperty extends UserProperty {
                     return FormValidation.error(unpairResponse.getError().getMessage());
                 } else {
                     lap.accountId = null;
+                    lap.user.save();
                     return FormValidation.ok(Messages.LatchAccountProperty_Unpair());
                 }
             }

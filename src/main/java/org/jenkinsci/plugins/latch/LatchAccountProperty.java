@@ -79,22 +79,25 @@ public class LatchAccountProperty extends UserProperty {
 
         public FormValidation doLatchPairConnection(@QueryParameter("pairToken") final String pairToken,
                                                     @AncestorInPath User user) throws IOException {
-            LatchApp latchApp = LatchSDK.getInstance();
-            if (latchApp != null) {
-                LatchResponse pairResponse = latchApp.pair(pairToken);
+            if (pairToken != null && !pairToken.isEmpty()) {
+                LatchApp latchApp = LatchSDK.getInstance();
+                if (latchApp != null) {
+                    LatchResponse pairResponse = latchApp.pair(pairToken);
 
-                if (pairResponse == null) {
-                    return FormValidation.error(Messages.LatchAccountProperty_UnreachableConnection());
-                } else if (pairResponse.getError() != null && pairResponse.getError().getCode() != 205) {
-                    return FormValidation.error(pairResponse.getError().getMessage());
-                } else {
-                    accountId = pairResponse.getData().get("accountId").getAsString();
-                    LatchAccountProperty lap = newInstance(user);
-                    user.addProperty(lap);
-                    return FormValidation.ok(Messages.LatchAccountProperty_Pair());
+                    if (pairResponse == null) {
+                        return FormValidation.error(Messages.LatchAccountProperty_UnreachableConnection());
+                    } else if (pairResponse.getError() != null && pairResponse.getError().getCode() != 205) {
+                        return FormValidation.error(Messages.LatchAccountProperty_Invalid_Token());
+                    } else {
+                        accountId = pairResponse.getData().get("accountId").getAsString();
+                        LatchAccountProperty lap = newInstance(user);
+                        user.addProperty(lap);
+                        return FormValidation.ok(Messages.LatchAccountProperty_Pair());
+                    }
                 }
+                return FormValidation.ok(Messages.LatchAccountProperty_PluginDisabled());
             }
-            return FormValidation.ok(Messages.LatchAccountProperty_PluginDisabled());
+            return FormValidation.error(Messages.LatchAccountProperty_Invalid_Token());
         }
 
         public FormValidation doLatchUnpairConnection(@AncestorInPath User user) throws IOException {
@@ -105,7 +108,7 @@ public class LatchAccountProperty extends UserProperty {
 
                 if (unpairResponse == null) {
                     return FormValidation.error(Messages.LatchAccountProperty_UnreachableConnection());
-                } else if (unpairResponse.getError() != null) {
+                } else if (unpairResponse.getError() != null && unpairResponse.getError().getCode() != 201) {
                     return FormValidation.error(unpairResponse.getError().getMessage());
                 } else {
                     lap.accountId = null;

@@ -91,6 +91,7 @@ public class LatchAppConfig extends Plugin {
         @Override
         public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
             try {
+                checkValidConfiguration(json);
                 enabled = json.getBoolean("enabled");
                 appId = json.getString("appId");
                 secret = json.getString("secret");
@@ -103,12 +104,33 @@ public class LatchAppConfig extends Plugin {
             }
         }
 
+        private void checkValidConfiguration(JSONObject json) throws FormException {
+            String appId = json.getString("appId");
+            String secret = json.getString("secret");
+
+            LatchApp latchApp = new LatchApp(appId, secret);
+            LatchResponse pairResponse = latchApp.pair("");
+
+            if (pairResponse == null) {
+                throw  new FormException(Messages.LatchAccountProperty_UnreachableConnection(), "enabled");
+            } else if (pairResponse.getError() == null && pairResponse.getData() == null) {
+                throw new FormException(Messages.LatchAppConfig_Certificate_Error(), "enabled");
+            } else if (appId.length() != 20) {
+                throw new FormException(Messages.LatchAppConfig_Invalid_AppId(), "appId");
+            } else if (secret.length() != 40) {
+                throw new FormException(Messages.LatchAppConfig_Invalid_Secret(), "secret");
+            } else if (pairResponse.getError() != null && pairResponse.getError().getCode() != 401) {
+                throw new FormException(pairResponse.getError().getMessage(), "enabled");
+            }
+        }
+
         private void savePluginConfiguration() throws IOException {
             LatchAppConfig latchAppConfig = LatchAppConfig.getInstance();
             latchAppConfig.setEnabled(enabled);
             latchAppConfig.setAppId(appId);
             latchAppConfig.setSecret(secret);
             latchAppConfig.save();
+            LatchSDK.reloadInstance();
         }
 
         @Override
@@ -122,14 +144,16 @@ public class LatchAppConfig extends Plugin {
             LatchApp latchApp = new LatchApp(appId, secret);
             LatchResponse pairResponse = latchApp.pair("");
 
-            if (appId.length() != 20) {
+            if (pairResponse == null) {
+                return FormValidation.error(Messages.LatchAccountProperty_UnreachableConnection());
+            } else if (pairResponse.getError() == null && pairResponse.getData() == null) {
+                return FormValidation.error(Messages.LatchAppConfig_Certificate_Error());
+            } else if (appId.length() != 20) {
                 return FormValidation.error(Messages.LatchAppConfig_Invalid_AppId());
             } else if (secret.length() != 40) {
                 return FormValidation.error(Messages.LatchAppConfig_Invalid_Secret());
-            } else if (pairResponse == null) {
-                return FormValidation.error(Messages.LatchAccountProperty_UnreachableConnection());
-            } else if (pairResponse.getError().getCode() != 401) {
-                return FormValidation.error(pairResponse.getError().toString());
+            } else if (pairResponse.getError() != null && pairResponse.getError().getCode() != 401) {
+                return FormValidation.error(pairResponse.getError().getMessage());
             }
             return FormValidation.ok(Messages.LatchAppConfig_Working());
         }

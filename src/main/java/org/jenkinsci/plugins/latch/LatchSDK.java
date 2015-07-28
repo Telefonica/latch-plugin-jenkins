@@ -34,6 +34,13 @@ public class LatchSDK extends LatchApp {
         return instance;
     }
 
+    public static void reloadInstance() {
+        LatchAppConfig latchAppConfig = LatchAppConfig.getInstance();
+        if (latchAppConfig.isEnabled()) {
+            instance = new LatchSDK(latchAppConfig.getAppId(), latchAppConfig.getSecret());
+        }
+    }
+
     private LatchSDK(String appId, String secretKey) {
         super(appId, secretKey);
     }

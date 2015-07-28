@@ -120,7 +120,7 @@ public class LatchAppConfig extends Plugin {
             } else if (secret.length() != 40) {
                 throw new FormException(Messages.LatchAppConfig_Invalid_Secret(), "secret");
             } else if (pairResponse.getError() != null && pairResponse.getError().getCode() != 401) {
-                throw new FormException(pairResponse.getError().getMessage(), "enabled");
+                throw new FormException(Messages.LatchAppConfig_Invalid_Credentials(), "enabled");
             }
         }
 
@@ -153,7 +153,7 @@ public class LatchAppConfig extends Plugin {
             } else if (secret.length() != 40) {
                 return FormValidation.error(Messages.LatchAppConfig_Invalid_Secret());
             } else if (pairResponse.getError() != null && pairResponse.getError().getCode() != 401) {
-                return FormValidation.error(pairResponse.getError().getMessage());
+                return FormValidation.error(Messages.LatchAppConfig_Invalid_Credentials());
             }
             return FormValidation.ok(Messages.LatchAppConfig_Working());
         }

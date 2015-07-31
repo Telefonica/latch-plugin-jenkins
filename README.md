@@ -16,7 +16,7 @@
 
 * From the side menu in developers area, the user can access the **"Documentation & SDKs"** section. Inside it, there is a **"SDKs and Plugins"** menu. Links to different SDKs in different programming languages and plugins developed so far, are shown.
 
-* Also you can download the plugin getting the executable of our [GitHub repository](https://github.com/ElevenPaths/latch-plugin-jenkins"https://github.com/ElevenPaths/latch-plugin-jenkins") in Releases section. Another option is download the source code and generate the plugin by yourself. Go to the root folder, when the pom.xml is allocated, and run by console the next command
+* You can download the plugin by getting the executable of the [GitHub repository](https://github.com/ElevenPaths/latch-plugin-jenkins"https://github.com/ElevenPaths/latch-plugin-jenkins") under the Releases section or just download the source code and generate the plugin by yourself. Go to the root folder, where the pom.xml is allocated, and run the next command on the command line:
 ```
 	mvn package
 ```

@@ -74,7 +74,7 @@ public class LatchAccountProperty extends UserProperty {
 
         @Override
         public LatchAccountProperty newInstance(User user) {
-            return new LatchAccountProperty(accountId);
+            return new LatchAccountProperty();
         }
 
         public FormValidation doLatchPairConnection(@QueryParameter("pairToken") final String pairToken,
@@ -89,8 +89,8 @@ public class LatchAccountProperty extends UserProperty {
                     } else if (pairResponse.getError() != null && pairResponse.getError().getCode() != 205) {
                         return FormValidation.error(Messages.LatchAccountProperty_Invalid_Token());
                     } else {
-                        accountId = pairResponse.getData().get("accountId").getAsString();
                         LatchAccountProperty lap = newInstance(user);
+                        lap.accountId = pairResponse.getData().get("accountId").getAsString();
                         user.addProperty(lap);
                         return FormValidation.ok(Messages.LatchAccountProperty_Pair());
                     }

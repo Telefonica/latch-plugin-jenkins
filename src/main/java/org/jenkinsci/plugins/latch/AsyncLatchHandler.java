@@ -58,11 +58,8 @@ public class AsyncLatchHandler implements Callable<Boolean> {
     }
 
     public static boolean checkLatchUnlockedStatus(LatchSDK api, String accountId){
-
         boolean result = true;
-
         try {
-
             if (api != null && accountId != null && !accountId.isEmpty()) {
                 ExecutorService executor = Executors.newSingleThreadExecutor();
                 Future<Boolean> future = executor.submit(new AsyncLatchHandler(api, accountId));

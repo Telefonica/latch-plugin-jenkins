@@ -21,11 +21,23 @@ package org.jenkinsci.plugins.latch;
 import com.elevenpaths.latch.LatchApp;
 import com.elevenpaths.latch.LatchResponse;
 import hudson.Extension;
-import hudson.model.*;
+import hudson.model.Descriptor;
+import hudson.model.User;
+import hudson.model.UserProperty;
+import hudson.model.UserPropertyDescriptor;
 import hudson.util.FormValidation;
 import jenkins.model.Jenkins;
-import org.kohsuke.stapler.*;
+import net.sf.json.JSONObject;
+import org.kohsuke.stapler.AncestorInPath;
+import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.StaplerRequest;
+
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 
 
 public class LatchAccountProperty extends UserProperty {
@@ -60,11 +72,24 @@ public class LatchAccountProperty extends UserProperty {
     @Extension
     public static class DescriptorImpl extends UserPropertyDescriptor {
 
+        private static Map<String, ArrayList<String>> tokens = new HashMap<String, ArrayList<String>>();
+
         private String accountId;
 
         @Override
         public String getDisplayName() {
             return "Latch";
+        }
+
+        public String getCsrf() {
+            String csrf = UUID.randomUUID().toString();
+            CsrfCache.getInstance().put(csrf, Jenkins.getAuthentication().getName());
+            return csrf;
+        }
+
+        @Override
+        public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
+            return super.configure(req, json);
         }
 
         @Override
@@ -78,45 +103,59 @@ public class LatchAccountProperty extends UserProperty {
         }
 
         public FormValidation doLatchPairConnection(@QueryParameter("pairToken") final String pairToken,
-                                                    @AncestorInPath User user) throws IOException {
-            if (pairToken != null && !pairToken.isEmpty()) {
+                                                    @AncestorInPath User user,
+                                                    @QueryParameter("csrf") final String csrf) throws IOException {
+            if (validCSRF(csrf)) {
+                if (pairToken != null && !pairToken.isEmpty()) {
+                    LatchApp latchApp = LatchSDK.getInstance();
+                    if (latchApp != null) {
+                        LatchResponse pairResponse = latchApp.pair(pairToken);
+
+                        if (pairResponse == null) {
+                            return FormValidation.error(Messages.LatchAccountProperty_UnreachableConnection());
+                        } else if (pairResponse.getError() != null && pairResponse.getError().getCode() != 205) {
+                            return FormValidation.error(Messages.LatchAccountProperty_Invalid_Token());
+                        } else {
+                            LatchAccountProperty lap = newInstance(user);
+                            lap.accountId = pairResponse.getData().get("accountId").getAsString();
+                            user.addProperty(lap);
+                            return FormValidation.ok(Messages.LatchAccountProperty_Pair());
+                        }
+                    }
+                    return FormValidation.ok(Messages.LatchAccountProperty_PluginDisabled());
+                }
+                return FormValidation.error(Messages.LatchAccountProperty_Invalid_Token());
+            }
+            return FormValidation.error(Messages.LatchAccountProperty_Csrf());
+        }
+
+        public FormValidation doLatchUnpairConnection(@AncestorInPath User user,
+                                                      @QueryParameter("csrf") final String csrf) throws IOException {
+            if (validCSRF(csrf)) {
+                LatchAccountProperty lap = user.getProperty(LatchAccountProperty.class);
                 LatchApp latchApp = LatchSDK.getInstance();
                 if (latchApp != null) {
-                    LatchResponse pairResponse = latchApp.pair(pairToken);
+                    LatchResponse unpairResponse = latchApp.unpair(lap.getAccountId());
 
-                    if (pairResponse == null) {
+                    if (unpairResponse == null) {
                         return FormValidation.error(Messages.LatchAccountProperty_UnreachableConnection());
-                    } else if (pairResponse.getError() != null && pairResponse.getError().getCode() != 205) {
-                        return FormValidation.error(Messages.LatchAccountProperty_Invalid_Token());
+                    } else if (unpairResponse.getError() != null && unpairResponse.getError().getCode() != 201) {
+                        return FormValidation.error(unpairResponse.getError().getMessage());
                     } else {
-                        LatchAccountProperty lap = newInstance(user);
-                        lap.accountId = pairResponse.getData().get("accountId").getAsString();
-                        user.addProperty(lap);
-                        return FormValidation.ok(Messages.LatchAccountProperty_Pair());
+                        lap.accountId = null;
+                        lap.user.save();
+                        return FormValidation.ok(Messages.LatchAccountProperty_Unpair());
                     }
                 }
                 return FormValidation.ok(Messages.LatchAccountProperty_PluginDisabled());
             }
-            return FormValidation.error(Messages.LatchAccountProperty_Invalid_Token());
+            return FormValidation.error(Messages.LatchAccountProperty_Csrf());
         }
 
-        public FormValidation doLatchUnpairConnection(@AncestorInPath User user) throws IOException {
-            LatchAccountProperty lap = user.getProperty(LatchAccountProperty.class);
-            LatchApp latchApp = LatchSDK.getInstance();
-            if (latchApp != null) {
-                LatchResponse unpairResponse = latchApp.unpair(lap.getAccountId());
-
-                if (unpairResponse == null) {
-                    return FormValidation.error(Messages.LatchAccountProperty_UnreachableConnection());
-                } else if (unpairResponse.getError() != null && unpairResponse.getError().getCode() != 201) {
-                    return FormValidation.error(unpairResponse.getError().getMessage());
-                } else {
-                    lap.accountId = null;
-                    lap.user.save();
-                    return FormValidation.ok(Messages.LatchAccountProperty_Unpair());
-                }
-            }
-            return FormValidation.ok(Messages.LatchAccountProperty_PluginDisabled());
+        private boolean validCSRF(String csrf) {
+            boolean valid = CsrfCache.getInstance().contains(csrf, Jenkins.getAuthentication().getName());
+            CsrfCache.getInstance().clear(csrf);
+            return valid;
         }
     }
 }

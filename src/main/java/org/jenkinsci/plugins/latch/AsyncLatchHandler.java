@@ -43,7 +43,6 @@ public class AsyncLatchHandler implements Callable<Boolean> {
     @Override
     public Boolean call() throws Exception {
         LatchResponse response = this.api.status(accountId);
-
         if (response != null && response.getData() != null && response.getData().has("operations")) {
 
             String appId = Jenkins.getInstance().getPlugin(LatchAppConfig.class).getAppId();
@@ -57,7 +56,7 @@ public class AsyncLatchHandler implements Callable<Boolean> {
         return true;
     }
 
-    public static boolean checkLatchUnlockedStatus(LatchSDK api, String accountId){
+    public static boolean checkLatchUnlockedStatus(LatchSDK api, String accountId) {
         boolean result = true;
         try {
             if (api != null && accountId != null && !accountId.isEmpty()) {

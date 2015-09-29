@@ -45,8 +45,6 @@ public class LatchAppConfig extends Plugin {
     private String appId;
     private String secret;
 
-
-
     @Override
     public void postInitialize() throws Exception {
         load();

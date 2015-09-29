@@ -38,9 +38,6 @@ public class CsrfCache {
     }
 
     public synchronized void clear(String token) {
-        ConcurrentMap cacheMap = cache.asMap();
-        if (cacheMap.containsKey(token)) {
-            cacheMap.remove(token);
-        }
+        cache.invalidate(token);
     }
 }

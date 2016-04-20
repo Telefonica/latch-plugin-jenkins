@@ -6,17 +6,17 @@
 
  * Jenkins version 1.560 or later.
 
- * To get the **"Application ID"** and **"Secret"**, (fundamental values for integrating Latch in any application), it’s necessary to register a developer account in [Latch's website](https://latch.elevenpaths.com"https://latch.elevenpaths.com"). On the upper right side, click on **"Developer area"**.
+ * To get the **"Application ID"** and **"Secret"**, (fundamental values for integrating Latch in any application), it’s necessary to register a developer account in [Latch's website](https://latch.elevenpaths.com). On the upper right side, click on **"Developer area"**.
 
 
 ##DOWNLOADING THE JENKINS PLUGIN
-* When the account is activated, the user will be able to create applications with Latch and access to developer documentation, including existing SDKs and plugins. The user has to access again to [Developer area](https://latch.elevenpaths.com/www/developerArea"https://latch.elevenpaths.com/www/developerArea"), and browse his applications from **"My applications"** section in the side menu.
+* When the account is activated, the user will be able to create applications with Latch and access to developer documentation, including existing SDKs and plugins. The user has to access again to [Developer area](https://latch.elevenpaths.com/www/developerArea), and browse his applications from **"My applications"** section in the side menu.
 
 * When creating an application, two fundamental fields are shown: **"Application ID"** and **"Secret"**, keep these for later use. There are some additional parameters to be chosen, as the application icon (that will be shown in Latch) and whether the application will support OTP (One Time Password) or not.
 
 * From the side menu in developers area, the user can access the **"Documentation & SDKs"** section. Inside it, there is a **"SDKs and Plugins"** menu. Links to different SDKs in different programming languages and plugins developed so far, are shown.
 
-* You can download the plugin by getting the executable of the [GitHub repository](https://github.com/ElevenPaths/latch-plugin-jenkins"https://github.com/ElevenPaths/latch-plugin-jenkins") under the Releases section or just download the source code and generate the plugin by yourself. Go to the root folder, where the pom.xml is allocated, and run the next command on the command line:
+* You can download the plugin by getting the executable of the [GitHub repository](https://github.com/ElevenPaths/latch-plugin-jenkins) under the Releases section or just download the source code and generate the plugin by yourself. Go to the root folder, where the pom.xml is allocated, and run the next command on the command line:
 ```
 	mvn package
 ```
